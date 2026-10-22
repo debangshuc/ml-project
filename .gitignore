@@ -1,0 +1,14 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Temporary downloads
+_dataset.zip
+*.tmp
+
+# OS / editor
+Thumbs.db
+.DS_Store
+.ipynb_checkpoints/
