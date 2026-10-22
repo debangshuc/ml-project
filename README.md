@@ -1,143 +1,51 @@
-# K-Means Customer Segmentation
+# Customer Segmentation with K-Means
 
-An end-to-end unsupervised learning mini-project that segments mall customers into
-actionable groups using **K-Means clustering**, built on the classic
-[Mall Customer Segmentation dataset](https://www.kaggle.com/datasets/vjchoudhary7/customer-segmentation-tutorial-in-python).
+Ever wondered what mall customers really look like on paper? I clustered 200
+mall shoppers by their **annual income** and **spending score** and found five
+very different people — including one high earners who barely spend at all
+(a huge missed opportunity for any marketer).
 
-The entire training pipeline lives in **one file** (`kmeans_train.py`) and runs
-unchanged **locally or in Google Colab** — it even auto-downloads the dataset if missing.
+Built with Python, scikit-learn, and matplotlib. The whole thing is
+**one script** (`kmeans_train.py`) — it runs locally or in
+[Google Colab](https://colab.research.google.com/) with zero setup, and even
+downloads the dataset by itself.
 
----
+![Clusters](output/kmeans_clusters.png)
 
-## Snapshot
+## What the clusters say
 
-| | |
+| Segment | Who they are |
 |---|---|
-| **Algorithm** | K-Means (Lloyd's, via `sklearn.cluster.KMeans`) |
-| **Features used** | `Annual Income (k$)`, `Spending Score (1-100)` |
-| **Rows** | 200 customers |
-| **Clusters (k)** | 5 — chosen by elbow method **and** silhouette score |
-| **Final metrics** | Inertia = 65.57, Silhouette = **0.555** |
-| **Reproducibility** | `random_state=42`, `n_init=10` |
+| **Premium spenders** (~$86k income, score 82) | The dream customers — rich *and* spending freely |
+| **Careful rich** (~$88k income, score 17) | High earners who hold back — the untapped market |
+| **Impulsive buyers** (~$26k income, score 79) | Spend beyond their income — easy wins with promos |
+| **Standard** (~$55k income, score 49) | The average middle — everything in moderation |
+| **Budget shoppers** (~$26k income, score 21) | Low income, low spend — browse but rarely buy |
 
----
+The cluster count (k=5) wasn't picked by eye: the elbow method bends at 5 and
+the silhouette score peaks at 5 (0.555), so both checks agree.
 
-## Results
-
-![Cluster visualization](output/kmeans_clusters.png)
-
-*(If the image does not render in Colab/GitHub, run `kmeans_train.py` — it regenerates `output/kmeans_clusters.png`.)*
-
-The 4-panel figure above shows, in order:
-
-1. **Elbow method** — inertia drops steeply, then flattens after k=5 (the "elbow")
-2. **Silhouette scores** — peak at k=5 (0.555), independently confirming the elbow
-3. **Cluster scatter** — the five segments with their centroids (X markers)
-4. **Cluster sizes** — 81 / 39 / 22 / 35 / 23 customers, fairly balanced
-
-## The 5 customer segments
-
-| Cluster | Size | Income | Score | Interpretation |
-|---|---|---|---|---|
-| 0 | 81 | $55.3k | 49.5 | **Standard** — average income, moderate spenders |
-| 1 | 39 | $86.5k | 82.1 | **Premium target** — high income, high spenders |
-| 2 | 22 | $25.7k | 79.4 | **Impulsive** — low income, big spenders |
-| 3 | 35 | $88.2k | 17.1 | **Careful rich** — high income, low spenders (untapped market) |
-| 4 | 23 | $26.3k | 20.9 | **Budget** — low income, low spenders |
-
----
-
-## Dataset
-
-| Column | Description | Values |
-|---|---|---|
-| `CustomerID` | Row identifier (dropped) | 1–200 |
-| `Gender` | Customer gender | Male / Female |
-| `Age` | Customer age | 18–70 |
-| `Annual Income (k$)` | Yearly income in $1000s | 15–137 |
-| `Spending Score (1-100)` | Mall-assigned spend behavior score | 1–99 |
-
-## Data quality & cleaning
-
-The dataset was audited before modeling; findings are summarized in the audit below:
-
-- **Missing values:** 0 · **Duplicates:** 0 · **Invalid labels:** 0
-- **Range validation:** all values within plausible bounds
-- **Outlier scan (IQR 1.5x fence):** only 2 points flagged (income = 137k) — **retained**,
-  since they are genuine high-earning customers and valuable segmentation signal
-- **Transformations:** dropped `CustomerID`, selected the two behavioral features,
-  standardized with `StandardScaler`
-
----
-
-## Pipeline (in `kmeans_train.py`)
-
-```
-1. Load raw data        -> auto-downloads the CSV if missing
-2. Prepare features     -> select income + spending score, StandardScaler
-3. Explore k            -> inertia + silhouette for k = 1..10
-4. Train KMeans         -> k=5, n_init=10, random_state=42
-5. Visualize & persist  -> 4-panel matplotlib figure + model/scaler/CSV artifacts
-```
-
-## Optimization notes
-
-- **Feature scaling** — income (15–137) and score (1–99) have very different ranges.
-  Without `StandardScaler`, raw income would dominate Euclidean distance and crush
-  the spending dimension. Scaling puts both features on equal footing (mean 0, sd 1).
-- **Feature selection** — `CustomerID` is a pure row identifier (no signal), and
-  age/gender add little for this demo; clustering on the two most behaviorally
-  meaningful features gives clean, interpretable, well-separated segments.
-- **Choosing k objectively** — instead of guessing k, both the elbow method (inertia)
-  and silhouette score were computed for k = 1..10; both independently peaked/hinted
-  at k=5. Silhouette also penalizes overly fragmented solutions (k=8 gives 0.455, worse).
-- **Stable initialization** — K-Means is sensitive to initial centroid placement.
-  `n_init=10` runs the algorithm 10 times with different seeds and keeps the best,
-  and `random_state=42` makes results exactly reproducible.
-- **Retained outliers** — the two 137k incomes are real customers; trimming them
-  would bias the "Premium target" segment. Clustering is kept on all 200 rows.
-- **Scalars persisted** — `scaler.pkl` + `kmeans_model.pkl` let new customers be
-  transformed with the *training* scaler and assigned to a segment without refitting.
-
----
-
-## Project structure
-
-```
-ml-project/
-├── Mall_Customers.csv            # raw dataset (Kaggle)
-├── kmeans_train.py               # one-file prep + train + visualize pipeline
-├── data/
-│   └── customers_with_clusters.csv   # customers labeled with cluster
-├── models/
-│   ├── kmeans_model.pkl          # fitted KMeans (k=5)
-│   └── scaler.pkl                # fitted StandardScaler (for new customers)
-├── output/
-│   └── kmeans_clusters.png       # 4-panel result figure
-└── README.md
-```
-
-## How to run
-
-**Locally** (requires `pandas scikit-learn matplotlib joblib`):
+## How to run it
 
 ```bash
 python kmeans_train.py
 ```
 
-**Google Colab** — upload `kmeans_train.py` and run one cell:
+That's it. In Colab, upload the script (or paste it into one cell) and run it —
+dependencies are preinstalled and the dataset auto-downloads. Want a different
+number of clusters? Change `CHOSEN_K` at the top.
 
-```python
-!python kmeans_train.py
-```
+## A few decisions worth knowing
 
-Or simply paste the file contents into a single Colab cell. Colab already has all
-dependencies preinstalled; the dataset auto-downloads if not present.
-To change the number of clusters, edit `CHOSEN_K` at the top of the file.
+- Features are **standardized** before clustering — raw income (up to 137) would
+  otherwise drown out the spending score (up to 100) in the distance calculation.
+- Two flagged "outliers" (the 137k earners) were **kept on purpose** — outliers
+  in spending data are exactly the premium segment you don't want to delete.
+- The fitted model and scaler are saved as pickles, so a new customer can be
+  assigned to a segment instantly: `kmeans.predict(scaler.transform([[85, 100]]))`.
 
-## Possible extensions
+## Data
 
-- 3D clustering using `age, annual_income, spending_score`
-- Gender breakdown per segment (marketing angle)
-- Auto-select k via `max(silhouette)` instead of a hard-coded value
-- Assign new customers: `kmeans.predict(scaler.transform([[income, score]]))`
+[Mall Customer Segmentation dataset](https://www.kaggle.com/datasets/vjchoudhary7/customer-segmentation-tutorial-in-python)
+— 200 customers, no missing values or duplicates. The full pipeline (prep →
+train → visualize) is reproducible end to end with `random_state=42`.
