@@ -59,7 +59,7 @@ The 4-panel figure above shows, in order:
 
 ## Data quality & cleaning
 
-The dataset was audited programmatically (full report: `output/preparation_report.txt`):
+The dataset was audited before modeling; findings are summarized in the audit below:
 
 - **Missing values:** 0 · **Duplicates:** 0 · **Invalid labels:** 0
 - **Range validation:** all values within plausible bounds
@@ -106,18 +106,14 @@ The dataset was audited programmatically (full report: `output/preparation_repor
 ```
 ml-project/
 ├── Mall_Customers.csv            # raw dataset (Kaggle)
-├── prepare_data.py               # audit + cleaning/ prep script (no training)
-├── kmeans_train.py               # one-file train + visualize pipeline
+├── kmeans_train.py               # one-file prep + train + visualize pipeline
 ├── data/
-│   ├── Mall_Customers_clean.csv  # cleaned dataset
-│   └── features_scaled.csv       # scaled feature matrix
+│   └── customers_with_clusters.csv   # customers labeled with cluster
 ├── models/
-│   ├── scaler.pkl                # fitted StandardScaler
-│   └── (kmeans_model.pkl, scaler.pkl also written by kmeans_train.py)
+│   ├── kmeans_model.pkl          # fitted KMeans (k=5)
+│   └── scaler.pkl                # fitted StandardScaler (for new customers)
 ├── output/
-│   ├── preparation_report.txt    # data-quality audit log
 │   └── kmeans_clusters.png       # 4-panel result figure
-├── customers_with_clusters.csv   # customers labeled with cluster
 └── README.md
 ```
 

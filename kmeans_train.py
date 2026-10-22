@@ -140,8 +140,10 @@ plt.savefig(plot_path, dpi=130, bbox_inches="tight")
 print(f"\nSaved plot -> {plot_path}")
 plt.show()  # interactive in Colab / local window
 
-# Persist artifacts for reuse
-joblib.dump(scaler, "scaler.pkl")
-joblib.dump(kmeans, "kmeans_model.pkl")
-df.to_csv("customers_with_clusters.csv", index=False)
-print("Saved: scaler.pkl, kmeans_model.pkl, customers_with_clusters.csv")
+# Persist artifacts for reuse (organized in folders)
+Path("models").mkdir(exist_ok=True)
+Path("data").mkdir(exist_ok=True)
+joblib.dump(scaler, "models/scaler.pkl")
+joblib.dump(kmeans, "models/kmeans_model.pkl")
+df.to_csv("data/customers_with_clusters.csv", index=False)
+print("Saved: models/scaler.pkl, models/kmeans_model.pkl, data/customers_with_clusters.csv")
